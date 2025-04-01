@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Contact</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="edit/edit.css">
+</head>
+<body>
+
+  <div class="frame">
+    
+  </div>
+
+    <div class="add-contact-form">
+      <h1>Edit Contact</h1>
+      <form id="edit-form">
+        <input type="hidden" id="contact-id">
+        
+        <label for="name">Name:</label>
+        <input type="text" id="name" placeholder="Enter Name" required><br><br>
+      
+        <label for="number">Phone Number:</label>
+        <input type="text" id="number" placeholder="Enter Phone Number" required><br><br>
+      
+        <button type="submit">Update Contact</button>
+      </form>
+      
+      <a href="/">
+        <button class="home-btn">Home</button>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    async function loadContact() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const contactId = urlParams.get("id");
+
+      if (!contactId || contactId.length !== 24) {
+        console.error("Invalid contact ID:", contactId);
+        alert("Invalid contact ID detected in URL. Please try again.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/get-contact?id=${contactId}`);
+        console.log(response);
+        
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const contact = await response.json();
+        console.log(contact);
+        
+
+        if (contact.error) {
+          console.error("Contact not found:", contact.error);
+          alert("Contact not found.");
+          return;
+        }
+
+        document.getElementById("contact-id").value = contact._id;
+        document.getElementById("name").value = contact.name;
+        document.getElementById("number").value = contact.number;
+
+      } catch (error) {
+        console.error("Error fetching contact:", error);
+        alert(`Error fetching contact: ${error.message}`);
+      }
+    }
+
+    async function updateContact(event) {
+      event.preventDefault();
+      
+      const id = document.getElementById("contact-id").value;
+      const name = document.getElementById("name").value;
+      const number = document.getElementById("number").value;
+
+      if (!id || id.length !== 24) {  
+          alert("Invalid Contact ID");
+          return;
+      }
+
+      const data = { id, name, number };
+      console.log("Updating contact with data:", data); 
+
+      try {
+        const response = await fetch("/update-contact", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(data)
+});
+
+
+          const result = await response.json();
+          if (response.ok) {
+              alert("Contact updated successfully!");
+              window.location.href = "/";
+          } else {
+              alert("Error updating contact: " + (result.error || "Unknown error"));
+          }
+      } catch (error) {
+          console.error("Error updating contact:", error);
+          alert("Error updating contact");
+      }
+    }
+
+    window.addEventListener("load", loadContact);
+    
+    document.getElementById("edit-form").addEventListener("submit", updateContact);
+  </script>
+</body>
+</html>

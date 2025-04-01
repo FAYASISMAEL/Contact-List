@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Book</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+  <div class="frame">
+    
+  </div>
+    
+    <div class="contact-book" id="contact-book">
+
+    </div>
+
+    <div class="add-contact-btn">
+      <a href="add/add.html">
+        <span class="plus-icon">+</span>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    async function loadContacts() {
+      try {
+        const response = await fetch("/contacts");
+        const contacts = await response.json();
+        const contactBook = document.getElementById("contact-book");
+        contactBook.innerHTML = "";
+        
+        contacts.forEach(contact => {
+          const contactDiv = document.createElement("div");
+          contactDiv.classList.add("contact");
+          contactDiv.innerHTML = contactDiv.innerHTML = `
+  <div class="contact-info">
+    <div class="contact-name">Name: ${contact.name}</div>
+    <div class="contact-number">Number: ${contact.number}</div>
+  </div>
+  <div class="contact-actions">
+    <i class="fas fa-ellipsis-v dots" onclick="toggleMenu(this)"></i>
+    <div class="action-menu">
+      <button class="edit-btn" onclick="editContact('${contact._id}')">Edit</button>
+      <button class="delete-btn" onclick="deleteContact('${contact._id}')">Delete</button>
+    </div>
+  </div>
+`;
+
+          contactBook.appendChild(contactDiv);
+        });
+      } catch (error) {
+        console.error("Failed to load contacts:", error);
+      }
+    }
+
+    async function deleteContact(id) {
+      try {
+        await fetch("/delete-contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id })
+        });
+        loadContacts();
+      } catch (error) {
+        console.error("Failed to delete contacts", error);
+      }
+    }
+
+    function editContact(id) {
+  console.log("Updating the Contact:", id);
+  window.location.href = `/edit.html?id=${id}`;
+}
+
+
+
+    window.editContact = function(id) {
+    console.log("Updating the Contact:", id);
+    window.location.href = `/edit.html?id=${id}`; 
+};
+
+
+   
+    function toggleMenu(element) {
+        const menu = element.nextElementSibling;
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+    window.toggleMenu = toggleMenu;
+
+    loadContacts();
+  </script>
+
+</body>
+</html>
